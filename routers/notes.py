@@ -76,7 +76,7 @@ async def create_note(note_in: notes.NoteCreate):
     return new_note
 
 
-@router.get("{note_id}", response_model=notes.NoteResponse, summary="Get a note by ID")
+@router.get("/{note_id}", response_model=notes.NoteResponse, summary="Get a note by ID")
 async def get_note(note_id: str):
     note = find_note(note_id)
 
@@ -87,7 +87,7 @@ async def get_note(note_id: str):
 
 
 @router.patch(
-    "{note_id}", response_model=notes.NoteResponse, summary="Partial update a note"
+    "/{note_id}", response_model=notes.NoteResponse, summary="Partial update a note"
 )
 async def update_note(note_id: str, note_update: notes.NoteUpdate):
     note = find_note(note_id)
@@ -100,6 +100,24 @@ async def update_note(note_id: str, note_update: notes.NoteUpdate):
     if update_data:
         note.update(cast(NoteRecord, update_data))
         note["updated_at"] = now
+
+    return note
+
+
+@router.put(
+    "/{note}", response_model=notes.NoteResponse, summary="Full update (replace) a note"
+)
+async def replace_note(note_id: str, note_in: notes.NoteCreate):
+    note = find_note(note_id)
+
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    now = datetime.now(ZoneInfo("UTC"))
+
+    note["title"] = note_in.title
+    note["content"] = note_in.content
+    note["updated_at"] = now
 
     return note
 
