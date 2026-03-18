@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from pydantic import BaseModel, Field
 
 from datetime import datetime
@@ -20,4 +20,4 @@ class NoteUpdate(NoteBase):
 class NoteResponse(NoteBase):
     id: str
     created_at: datetime
-    updated_at: datetime | None = None
+    updated_at: Optional[datetime]
