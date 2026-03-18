@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, HTTPException
-from typing import List, Optional, TypedDict
+from typing import List, Optional, TypedDict, cast
 from schemas import notes
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -58,5 +58,24 @@ async def get_note(note_id: str):
 
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
+
+    return note
+
+
+@router.patch(
+    "{note_id}", response_model=notes.NoteResponse, summary="Partial update a note"
+)
+async def update_note(note_id: str, note_update: notes.NoteUpdate):
+    note = find_note(note_id)
+    now = datetime.now(ZoneInfo("UTC"))
+
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    # apply only fields that were actually sent
+    update_data = note_update.model_dump(exclude_unset=True)
+    if update_data:
+        note.update(cast(NoteRecord, update_data))
+        note["updated_at"] = now
 
     return note
