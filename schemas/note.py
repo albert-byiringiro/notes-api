@@ -1,8 +1,9 @@
-from pydantic import BaseModel
-from datetime import datetime
+from typing import Annotated
+from pydantic import BaseModel, Field
+
+# from datetime import datetime
 
 
 class NoteCreate(BaseModel):
-    title: str
-    content: str
-    created_at: datetime
+    title: Annotated[str, Field(min_length=1, max_length=200)]
+    content: Annotated[str, Field(min_length=1, max_length=5000)]
