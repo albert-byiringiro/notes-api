@@ -1,7 +1,7 @@
 from typing import Annotated
 from pydantic import BaseModel, Field
 
-# from datetime import datetime
+from datetime import datetime
 
 
 class NoteBase(BaseModel):
@@ -15,3 +15,9 @@ class NoteCreate(NoteBase):
 
 class NoteUpdate(NoteBase):
     pass
+
+
+class NoteResponse(NoteBase):
+    id: str
+    created_at: datetime
+    updated_at: datetime | None = None
