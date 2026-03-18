@@ -72,10 +72,19 @@ async def update_note(note_id: str, note_update: notes.NoteUpdate):
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
 
-    # apply only fields that were actually sent
     update_data = note_update.model_dump(exclude_unset=True)
     if update_data:
         note.update(cast(NoteRecord, update_data))
         note["updated_at"] = now
 
     return note
+
+
+@router.delete("/", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a note")
+async def delele_note(note_id: str):
+    note = find_note(note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    notes_db.remove(note)
+    return None
