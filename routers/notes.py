@@ -1,5 +1,5 @@
-from fastapi import APIRouter, status, HTTPException
-from typing import List, Optional, TypedDict, cast
+from fastapi import APIRouter, status, HTTPException, Query
+from typing import List, Optional, TypedDict, cast, Annotated
 from schemas import notes
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -19,7 +19,6 @@ class NoteRecord(TypedDict):
 notes_db: List[NoteRecord] = []
 
 
-# Helper function to find ID
 def find_note(note_id: str) -> NoteRecord | None:
     for note in notes_db:
         if note["id"] == note_id:
@@ -28,9 +27,34 @@ def find_note(note_id: str) -> NoteRecord | None:
     return None
 
 
-@router.get("/", response_model=List[notes.NoteResponse], summary="List all notes")
-async def list_notes():
-    return notes_db
+@router.get(
+    "/",
+    response_model=List[notes.NoteResponse],
+    summary="List all notes (with optional pagination & title filter)",
+)
+async def list_notes(
+    skip: Annotated[
+        int, Query(ge=0, description="Number of records to skip (offset)")
+    ] = 0,
+    limit: Annotated[
+        int, Query(ge=1, le=100, description="Max number of records to return")
+    ] = 10,
+    title: Annotated[
+        Optional[str],
+        Query(description="Filter by title (case-insensitive partial match)"),
+    ] = None,
+):
+    filtered_notes = notes_db
+
+    if title:
+        title_lower = title.lower()
+        filtered_notes = [
+            note for note in filtered_notes if title_lower in note["title"].lower()
+        ]
+
+    paginated_notes = filtered_notes[skip : skip + limit]
+
+    return paginated_notes
 
 
 @router.post(
