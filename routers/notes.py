@@ -19,6 +19,15 @@ class NoteRecord(TypedDict):
 notes_db: List[NoteRecord] = []
 
 
+# Helper function to find ID
+def find_note(note_id: str) -> NoteRecord | None:
+    for note in notes_db:
+        if note["id"] == note_id:
+            return note
+
+    return None
+
+
 @router.get("/", response_model=List[notes.NoteResponse], summary="List all notes")
 async def list_notes():
     return notes_db
