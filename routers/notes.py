@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, HTTPException
 from typing import List, Optional, TypedDict
 from schemas import notes
 from datetime import datetime
@@ -50,3 +50,13 @@ async def create_note(note_in: notes.NoteCreate):
     }
     notes_db.append(new_note)
     return new_note
+
+
+@router.get("{note_id}", response_model=notes.NoteResponse, summary="Get a note by ID")
+async def get_note(note_id: str):
+    note = find_note(note_id)
+
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    return note
