@@ -1,6 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter
 from typing import List, Optional, TypedDict
+from schemas import notes
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
 
@@ -14,3 +15,8 @@ class NoteRecord(TypedDict):
 
 
 notes_db: List[NoteRecord] = []
+
+
+@router.get("/", response_model=List[notes.NoteResponse], summary="List all notes")
+async def list_notes():
+    return notes_db

@@ -1,8 +1,5 @@
 from fastapi import FastAPI
+from routers import notes
 
 app = FastAPI(title="Simple Notes API")
-
-
-@app.get("/")
-async def get_all():
-    return "Hello, World"
+app.include_router(notes.router)
