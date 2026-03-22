@@ -1,6 +1,6 @@
-from fastapi import APIRouter, status, HTTPException, Query
-from typing import List, Optional, TypedDict, cast, Annotated
-from schemas.note import NoteCreate, NoteResponse, NoteUpdate
+from fastapi import APIRouter, status, HTTPException
+from typing import TypedDict
+from schemas.note import NoteCreate, NoteResponse
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
