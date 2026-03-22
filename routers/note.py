@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status, HTTPException, Query
 from typing import List, Optional, TypedDict, cast, Annotated
-from schemas import note
+from schemas.note import NoteCreate, NoteResponse, NoteUpdate
+
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import uuid
@@ -13,18 +14,31 @@ class NoteRecord(TypedDict):
     title: str
     content: str
     created_at: datetime
-    updated_at: Optional[datetime]
+    updated_at: datetime | None
 
 
 notes_db: dict[str, NoteRecord] = {}
 
 
-def find_note(note_id: str) -> NoteRecord | None:
-    for note in notes_db:
-        if note["id"] == note_id:
-            return note
+@router.post(
+    "/",
+    response_model=NoteResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new note",
+)
+async def create_note(note: NoteCreate) -> NoteResponse:
+    note_id = str(uuid.uuid4())
 
-    return None
+    record: NoteRecord = {
+        "id": note_id,
+        "title": note.title,
+        "content": note.content,
+        "created_at": datetime.now(ZoneInfo("UTC")),
+        "updated_at": None,
+    }
+
+    notes_db[note_id] = record
+    return NoteResponse(**record)
 
 
 @router.get(
@@ -55,25 +69,6 @@ async def list_notes(
     paginated_notes = filtered_notes[skip : skip + limit]
 
     return paginated_notes
-
-
-@router.post(
-    "/",
-    response_model=note.NoteResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Create a new note",
-)
-async def create_note(note_in: note.NoteCreate):
-    now = datetime.now(ZoneInfo("UTC"))
-    new_note: NoteRecord = {
-        "id": str(uuid.uuid4()),
-        "title": note_in.title,
-        "content": note_in.content,
-        "created_at": now,
-        "updated_at": None,
-    }
-    notes_db.append(new_note)
-    return new_note
 
 
 @router.get("/{note_id}", response_model=note.NoteResponse, summary="Get a note by ID")
