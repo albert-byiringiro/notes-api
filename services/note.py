@@ -47,3 +47,9 @@ class NoteService:
                 if search in n["title"].lower() or search in n["content"].lower()
             ]
         return [NoteResponse(**n) for n in notes[skip : skip + limit]]
+
+    def get(self, note_id: str) -> NoteResponse:
+        if note_id not in self._db:
+            raise KeyError(f"Note {note_id} not found")
+
+        return NoteResponse(**self._db[note_id])
