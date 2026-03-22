@@ -31,3 +31,19 @@ class NoteService:
 
         self._db[note_id] = record
         return NoteResponse(**record)
+
+    def list(
+        self,
+        skip: int = 0,
+        limit: int = 10,
+        keyword: str | None = None,
+    ) -> list[NoteResponse]:
+        notes = list(self._db.values())
+        if keyword is not None:
+            search = keyword.lower()
+            notes = [
+                n
+                for n in notes
+                if search in n["title"].lower() or search in n["content"].lower()
+            ]
+        return [NoteResponse(**n) for n in notes[skip : skip + limit]]
