@@ -54,22 +54,24 @@ async def get_note(note_id: str) -> NoteResponse:
     return NoteResponse(**notes_db[note_id])
 
 
-@router.patch(
-    "/{note_id}", response_model=note.NoteResponse, summary="Partial update a note"
-)
-async def update_note(note_id: str, note_update: note.NoteUpdate):
-    note = find_note(note_id)
-    now = datetime.now(ZoneInfo("UTC"))
+@router.put("/{note_id}")
+async def update_note(note_id: str, note: NoteCreate) -> NoteResponse:
 
-    if not note:
-        raise HTTPException(status_code=404, detail="Note not found")
+    if note_id not in notes_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Note {note_id} not found"
+        )
 
-    update_data = note_update.model_dump(exclude_unset=True)
-    if update_data:
-        note.update(cast(NoteRecord, update_data))
-        note["updated_at"] = now
+    record: NoteRecord = {
+        "id": note_id,
+        "title": note.title,
+        "content": note.content,
+        "created_at": notes_db[note_id]["created_at"],
+        "updated_at": datetime.now(ZoneInfo("UTC")),
+    }
 
-    return note
+    notes_db[note_id] = record
+    return NoteResponse(**record)
 
 
 @router.put(
