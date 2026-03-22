@@ -10,9 +10,11 @@ router = APIRouter(prefix="/notes", tags=["Notes"])
 
 # Dependency factory
 
+_service_instance = NoteService()
+
 
 def get_note_service() -> NoteService:
-    return NoteService()
+    return _service_instance
 
 
 NotesServiceDep = Annotated[NoteService, Depends(get_note_service)]
