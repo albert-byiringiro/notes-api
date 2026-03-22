@@ -54,23 +54,13 @@ async def get_note(note_id: str, service: NotesServiceDep) -> NoteResponse:
 
 
 @router.put("/{note_id}")
-async def update_note(note_id: str, note: NoteCreate) -> NoteResponse:
-
-    if note_id not in notes_db:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Note {note_id} not found"
-        )
-
-    record: NoteRecord = {
-        "id": note_id,
-        "title": note.title,
-        "content": note.content,
-        "created_at": notes_db[note_id]["created_at"],
-        "updated_at": datetime.now(ZoneInfo("UTC")),
-    }
-
-    notes_db[note_id] = record
-    return NoteResponse(**record)
+async def update_note(
+    note_id: str, note: NoteCreate, service: NotesServiceDep
+) -> NoteResponse:
+    try:
+        return service.update(note_id, note)
+    except KeyError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.patch("/{note_id}")
