@@ -86,7 +86,7 @@ async def update_note(note_id: str, note: NoteCreate) -> NoteResponse:
     return NoteResponse(**record)
 
 
-@router.patch("{note_id}")
+@router.patch("/{note_id}")
 async def patch_note(note_id: str, note: NoteUpdate) -> NoteResponse:
     if note_id not in notes_db:
         raise HTTPException(
