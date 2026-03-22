@@ -40,8 +40,20 @@ async def create_note(note: NoteCreate) -> NoteResponse:
 
 
 @router.get("/")
-async def get_notes() -> list[NoteResponse]:
-    return [NoteResponse(**note) for note in notes_db.values()]
+async def get_notes(
+    skip: int = 0, limit: int = 10, keyword: str | None = None
+) -> list[NoteResponse]:
+    notes = list(notes_db.values())
+
+    if keyword is not None:
+        search = keyword.lower()
+        notes = [
+            n
+            for n in notes
+            if search in n["title"].lower() or search in n["content"].lower()
+        ]
+
+    return [NoteResponse(**note) for note in notes[skip : skip + limit]]
 
 
 @router.get("/{note_id}")
