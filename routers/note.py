@@ -1,12 +1,20 @@
 from fastapi import APIRouter, status, HTTPException
 from typing import TypedDict, cast
 from schemas.note import NoteCreate, NoteResponse, NoteUpdate
+from services.note import NoteService
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import uuid
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
+
+
+# Dependency factory
+
+
+def get_note_service() -> NoteService:
+    return NoteService()
 
 
 class NoteRecord(TypedDict):
