@@ -64,21 +64,13 @@ async def update_note(
 
 
 @router.patch("/{note_id}")
-async def patch_note(note_id: str, note: NoteUpdate) -> NoteResponse:
-    if note_id not in notes_db:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Note {note_id} not found",
-        )
-
-    stored = notes_db[note_id]
-
-    updates = note.model_dump(exclude_unset=True)
-    if updates:
-        stored.update(cast(NoteRecord, updates))
-        stored["updated_at"] = datetime.now(ZoneInfo("UTC"))
-
-    return NoteResponse(**stored)
+async def patch_note(
+    note_id: str, note: NoteUpdate, service: NotesServiceDep
+) -> NoteResponse:
+    try:
+        return service.patch(note_id, note)
+    except KeyError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
