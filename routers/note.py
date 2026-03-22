@@ -16,7 +16,7 @@ class NoteRecord(TypedDict):
     updated_at: Optional[datetime]
 
 
-notes_db: List[NoteRecord] = []
+notes_db: dict[str, NoteRecord] = {}
 
 
 def find_note(note_id: str) -> NoteRecord | None:
