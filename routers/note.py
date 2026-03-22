@@ -1,5 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, status, HTTPException
 from typing import Annotated, cast
+from dependencies import PaginationParams
 from schemas.note import NoteCreate, NoteResponse, NoteUpdate
 from services.note import NoteService
 
@@ -37,19 +38,11 @@ async def create_note(
 
 @router.get("/")
 async def get_notes(
-    skip: int = 0, limit: int = 10, keyword: str | None = None
+    service: NotesServiceDep,
+    pagination: Annotated[PaginationParams, Depends()],
+    keyword: str | None = None,
 ) -> list[NoteResponse]:
-    notes = list(notes_db.values())
-
-    if keyword is not None:
-        search = keyword.lower()
-        notes = [
-            n
-            for n in notes
-            if search in n["title"].lower() or search in n["content"].lower()
-        ]
-
-    return [NoteResponse(**note) for note in notes[skip : skip + limit]]
+    return service.list(skip=pagination.skip, limit=pagination.limit, keyword=keyword)
 
 
 @router.get("/{note_id}")
