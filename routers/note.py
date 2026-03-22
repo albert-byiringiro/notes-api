@@ -74,29 +74,11 @@ async def update_note(note_id: str, note: NoteCreate) -> NoteResponse:
     return NoteResponse(**record)
 
 
-@router.put(
-    "/{note}", response_model=note.NoteResponse, summary="Full update (replace) a note"
-)
-async def replace_note(note_id: str, note_in: note.NoteCreate):
-    note = find_note(note_id)
+@router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_note(note_id: str) -> None:
+    if note_id not in notes_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Note{note_id} not found"
+        )
 
-    if not note:
-        raise HTTPException(status_code=404, detail="Note not found")
-
-    now = datetime.now(ZoneInfo("UTC"))
-
-    note["title"] = note_in.title
-    note["content"] = note_in.content
-    note["updated_at"] = now
-
-    return note
-
-
-@router.delete("/", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a note")
-async def delele_note(note_id: str):
-    note = find_note(note_id)
-    if not note:
-        raise HTTPException(status_code=404, detail="Note not found")
-
-    notes_db.remove(note)
-    return None
+    del notes_db[note_id]
