@@ -55,7 +55,6 @@ class NoteService:
         return NoteResponse(**self._db[note_id])
 
     def update(self, note_id: str, note: NoteCreate) -> NoteResponse:
-        """PUT — full replacement. Preserves created_at."""
         if note_id not in self._db:
             raise KeyError(f"Note {note_id} not found")
 
