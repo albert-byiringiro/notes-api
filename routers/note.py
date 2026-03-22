@@ -22,9 +22,7 @@ notes_db: dict[str, NoteRecord] = {}
 
 @router.post(
     "/",
-    response_model=NoteResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Create a new note",
 )
 async def create_note(note: NoteCreate) -> NoteResponse:
     note_id = str(uuid.uuid4())
@@ -41,34 +39,9 @@ async def create_note(note: NoteCreate) -> NoteResponse:
     return NoteResponse(**record)
 
 
-@router.get(
-    "/",
-    response_model=List[note.NoteResponse],
-    summary="List all notes (with optional pagination & title filter)",
-)
-async def list_notes(
-    skip: Annotated[
-        int, Query(ge=0, description="Number of records to skip (offset)")
-    ] = 0,
-    limit: Annotated[
-        int, Query(ge=1, le=100, description="Max number of records to return")
-    ] = 10,
-    title: Annotated[
-        Optional[str],
-        Query(description="Filter by title (case-insensitive partial match)"),
-    ] = None,
-):
-    filtered_notes = notes_db
-
-    if title:
-        title_lower = title.lower()
-        filtered_notes = [
-            note for note in filtered_notes if title_lower in note["title"].lower()
-        ]
-
-    paginated_notes = filtered_notes[skip : skip + limit]
-
-    return paginated_notes
+@router.get("/")
+async def get_notes() -> list[NoteResponse]:
+    return [NoteResponse(**note) for note in notes_db.values()]
 
 
 @router.get("/{note_id}", response_model=note.NoteResponse, summary="Get a note by ID")
