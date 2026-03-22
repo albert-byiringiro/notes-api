@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import TypedDict
+from typing import TypedDict, cast
 from zoneinfo import ZoneInfo
 
 from schemas.note import NoteCreate, NoteResponse, NoteUpdate
@@ -68,3 +68,15 @@ class NoteService:
 
         self._db[note_id] = record
         return NoteResponse(**record)
+
+    def patch(self, note_id: str, note: NoteUpdate) -> NoteResponse:
+        if note_id not in self._db:
+            raise KeyError(f"Note {note_id} not found")
+        stored = self._db[note_id]
+
+        updates = note.model_dump(exclude_unset=True)
+        if updates:
+            stored.update(cast(NoteRecord, updates))
+            stored["updated_at"] = datetime.now(ZoneInfo("UTC"))
+
+        return NoteResponse(**stored)
