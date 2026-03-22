@@ -44,14 +44,14 @@ async def get_notes() -> list[NoteResponse]:
     return [NoteResponse(**note) for note in notes_db.values()]
 
 
-@router.get("/{note_id}", response_model=note.NoteResponse, summary="Get a note by ID")
-async def get_note(note_id: str):
-    note = find_note(note_id)
+@router.get("/{note_id}")
+async def get_note(note_id: str) -> NoteResponse:
+    if note_id not in notes_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Note {note_id} not found"
+        )
 
-    if not note:
-        raise HTTPException(status_code=404, detail="Note not found")
-
-    return note
+    return NoteResponse(**notes_db[note_id])
 
 
 @router.patch(
