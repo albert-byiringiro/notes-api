@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, status, HTTPException
-from typing import Annotated, TypedDict, cast
+from fastapi import APIRouter, BackgroundTasks, Depends, status, HTTPException
+from typing import Annotated, cast
 from schemas.note import NoteCreate, NoteResponse, NoteUpdate
 from services.note import NoteService
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
-import uuid
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
 
@@ -20,34 +19,20 @@ def get_note_service() -> NoteService:
 NotesServiceDep = Annotated[NoteService, Depends(get_note_service)]
 
 
-class NoteRecord(TypedDict):
-    id: str
-    title: str
-    content: str
-    created_at: datetime
-    updated_at: datetime | None
-
-
-notes_db: dict[str, NoteRecord] = {}
+def _log_event(event: str, note_id: str, title: str) -> None:
+    print(f"[notes] {event}: id={note_id} title={title!r}")
 
 
 @router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
 )
-async def create_note(note: NoteCreate) -> NoteResponse:
-    note_id = str(uuid.uuid4())
-
-    record: NoteRecord = {
-        "id": note_id,
-        "title": note.title,
-        "content": note.content,
-        "created_at": datetime.now(ZoneInfo("UTC")),
-        "updated_at": None,
-    }
-
-    notes_db[note_id] = record
-    return NoteResponse(**record)
+async def create_note(
+    note: NoteCreate, service: NotesServiceDep, background_tasks: BackgroundTasks
+) -> NoteResponse:
+    new_note = service.create(note)
+    background_tasks.add_task(_log_event, "created", new_note.id, new_note.title)
+    return new_note
 
 
 @router.get("/")
