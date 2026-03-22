@@ -1,5 +1,5 @@
-from fastapi import APIRouter, status, HTTPException
-from typing import TypedDict, cast
+from fastapi import APIRouter, Depends, status, HTTPException
+from typing import Annotated, TypedDict, cast
 from schemas.note import NoteCreate, NoteResponse, NoteUpdate
 from services.note import NoteService
 
@@ -15,6 +15,9 @@ router = APIRouter(prefix="/notes", tags=["Notes"])
 
 def get_note_service() -> NoteService:
     return NoteService()
+
+
+NotesServiceDep = Annotated[NoteService, Depends(get_note_service)]
 
 
 class NoteRecord(TypedDict):
