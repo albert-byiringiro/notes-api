@@ -46,13 +46,11 @@ async def get_notes(
 
 
 @router.get("/{note_id}")
-async def get_note(note_id: str) -> NoteResponse:
-    if note_id not in notes_db:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Note {note_id} not found"
-        )
-
-    return NoteResponse(**notes_db[note_id])
+async def get_note(note_id: str, service: NotesServiceDep) -> NoteResponse:
+    try:
+        return service.get(note_id)
+    except KeyError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.put("/{note_id}")
