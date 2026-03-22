@@ -80,3 +80,8 @@ class NoteService:
             stored["updated_at"] = datetime.now(ZoneInfo("UTC"))
 
         return NoteResponse(**stored)
+
+    def delete(self, note_id: str) -> None:
+        if note_id not in self._db:
+            raise KeyError(f"Note {note_id} not found")
+        del self._db[note_id]
