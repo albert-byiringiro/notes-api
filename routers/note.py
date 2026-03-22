@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, HTTPException, Query
 from typing import List, Optional, TypedDict, cast, Annotated
-from schemas import notes
+from schemas import note
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import uuid
@@ -29,7 +29,7 @@ def find_note(note_id: str) -> NoteRecord | None:
 
 @router.get(
     "/",
-    response_model=List[notes.NoteResponse],
+    response_model=List[note.NoteResponse],
     summary="List all notes (with optional pagination & title filter)",
 )
 async def list_notes(
@@ -59,11 +59,11 @@ async def list_notes(
 
 @router.post(
     "/",
-    response_model=notes.NoteResponse,
+    response_model=note.NoteResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new note",
 )
-async def create_note(note_in: notes.NoteCreate):
+async def create_note(note_in: note.NoteCreate):
     now = datetime.now(ZoneInfo("UTC"))
     new_note: NoteRecord = {
         "id": str(uuid.uuid4()),
@@ -76,7 +76,7 @@ async def create_note(note_in: notes.NoteCreate):
     return new_note
 
 
-@router.get("/{note_id}", response_model=notes.NoteResponse, summary="Get a note by ID")
+@router.get("/{note_id}", response_model=note.NoteResponse, summary="Get a note by ID")
 async def get_note(note_id: str):
     note = find_note(note_id)
 
@@ -87,9 +87,9 @@ async def get_note(note_id: str):
 
 
 @router.patch(
-    "/{note_id}", response_model=notes.NoteResponse, summary="Partial update a note"
+    "/{note_id}", response_model=note.NoteResponse, summary="Partial update a note"
 )
-async def update_note(note_id: str, note_update: notes.NoteUpdate):
+async def update_note(note_id: str, note_update: note.NoteUpdate):
     note = find_note(note_id)
     now = datetime.now(ZoneInfo("UTC"))
 
@@ -105,9 +105,9 @@ async def update_note(note_id: str, note_update: notes.NoteUpdate):
 
 
 @router.put(
-    "/{note}", response_model=notes.NoteResponse, summary="Full update (replace) a note"
+    "/{note}", response_model=note.NoteResponse, summary="Full update (replace) a note"
 )
-async def replace_note(note_id: str, note_in: notes.NoteCreate):
+async def replace_note(note_id: str, note_in: note.NoteCreate):
     note = find_note(note_id)
 
     if not note:
