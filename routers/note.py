@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, HTTPException
-from typing import TypedDict
-from schemas.note import NoteCreate, NoteResponse
+from typing import TypedDict, cast
+from schemas.note import NoteCreate, NoteResponse, NoteUpdate
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -72,6 +72,24 @@ async def update_note(note_id: str, note: NoteCreate) -> NoteResponse:
 
     notes_db[note_id] = record
     return NoteResponse(**record)
+
+
+@router.patch("{note_id}")
+async def patch_note(note_id: str, note: NoteUpdate) -> NoteResponse:
+    if note_id not in notes_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Note {note_id} not found",
+        )
+
+    stored = notes_db[note_id]
+
+    updates = note.model_dump(exclude_unset=True)
+    if updates:
+        stored.update(cast(NoteRecord, updates))
+        stored["updated_at"] = datetime.now(ZoneInfo("UTC"))
+
+    return NoteResponse(**stored)
 
 
 @router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
